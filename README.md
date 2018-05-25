@@ -101,7 +101,7 @@ bob$ lncli newaddress np2wkh
 
 ```
 # Using address from above.
-$ docker-compose run --rm bitcoin-cli generate 105 2N7L9vZXJggNVMsmGRwu7seg8LMim1Zhimu
+$ docker-compose run --rm bitcoin-cli generatetoaddress 105 2N7L9vZXJggNVMsmGRwu7seg8LMim1Zhimu
 [
   "4764ec4b4f585a1d519376622aad467070e1973d17b5ed596321a1cc9bf96f59",
   "3ec21b6c6e558913289d9533fcc5fed9ad8cd57701243e150f422eaff7d31402",
@@ -171,7 +171,7 @@ bob$ lncli listchannels
 }
 
 # So lets mine some blocks in another window (only need 4 now)
-$ docker-compose run --rm bitcoin-cli generate 4 2N7L9vZXJggNVMsmGRwu7seg8LMim1Zhimu
+$ docker-compose run --rm bitcoin-cli generatetoaddress 4 2N7L9vZXJggNVMsmGRwu7seg8LMim1Zhimu
 
 # Bob should see his channel funded now
 bob$ lncli listchannels
