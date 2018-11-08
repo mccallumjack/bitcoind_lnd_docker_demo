@@ -45,7 +45,7 @@ PARAMS=$(echo \
     -datadir=/bitcoin/.bitcoin \
     -rpcallowip=::/0 \
     -zmqpubrawblock=tcp://*:28332 \
-    -zmqpubrawtx=tcp://*:28332 \
+    -zmqpubrawtx=tcp://*:28333 \
     -txindex \
     -disablewallet \
     -printtoconsole

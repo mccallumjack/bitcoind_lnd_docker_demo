@@ -1,6 +1,6 @@
 # Demo of Bitcoind and LND using Docker
 
-This repo contains the docker files for our bitcoind and lnd nodes, as well as some convenience services in the docker-compose file for local testing. By default everything runs in regtest. This is heavily based off the demo and setup in [LND](https://github.com/lightningnetwork/lnd/tree/master/docker). It has not been hardened for production use.
+This repo contains the docker files for our bitcoind and lnd nodes, as well as some convenience services in the docker-compose file for local testing. By default everything runs in regtest. This is heavily based off the demo and setup in [LND](https://github.com/lightningnetwork/lnd/tree/master/docker). It is not for production use.
 
 ## Instructions to Run Locally
 
@@ -56,20 +56,22 @@ $ docker-compose run --rm bitcoin-cli getnetworkinfo
 
 #### 2) Spin up an LND Node (Alice)
 ```
-$ docker-compose up --rm -d --name alice lnd
+$ docker-compose run --rm -d --name alice lnd
 
 # Go into the alice container
 $ docker exec -it alice bash
 
 # Check that we are up and running
-alice$ lncli getinfo
+alice$ lncli --network=regtest getinfo
+
 {
     "identity_pubkey": "028c672ba08dd9f23d2be5a13a7b0221d1c0c71f24ffe1bc2f7a06366bb945b1cb",
+    "alias": "022757cfe3ba0e925401",
     "num_pending_channels": 0,
     "num_active_channels": 0,
     "num_peers": 0,
-    "block_height": 215,
-    "block_hash": "7b670b78b3886674f70073349e8f6521a4462b67b531bfd78ae9245a5a2cf71e",
+    "block_height": 109,
+    "block_hash": "003b45f58b5b83c9b749c9fa7b5d1e115db271a662266c36b8db4e5f972b0da9",
     "synced_to_chain": true,
     "testnet": false,
     "chains": [
@@ -77,8 +79,8 @@ alice$ lncli getinfo
     ],
     "uris": [
     ],
-    "best_header_timestamp": "1527157711",
-    "version": "0.4.1-beta commit="
+    "best_header_timestamp": "1541651988",
+    "version": "0.5.0-beta commit="
 }
 ```
 
@@ -91,7 +93,7 @@ $ docker-compose run --rm -d --name bob lnd
 
 $ docker exec -it bob bash
 
-bob$ lncli newaddress np2wkh
+bob$ lncli --network=regtest newaddress np2wkh
 {
     "address": "2N7L9vZXJggNVMsmGRwu7seg8LMim1Zhimu"
 }
@@ -109,10 +111,10 @@ $ docker-compose run --rm bitcoin-cli generatetoaddress 105 2N7L9vZXJggNVMsmGRwu
 ]
 
 # Back in bob's shell
-bob$ lncli walletbalance
+bob$ lncli --network=regtest walletbalance
 {
-    "total_balance": "15000000000",
-    "confirmed_balance": "15000000000",
+    "total_balance": "30000000000",
+    "confirmed_balance": "30000000000",
     "unconfirmed_balance": "0"
 }
 ```
@@ -126,7 +128,7 @@ $ docker inspect alice | grep IPAddress
 IPAdress: 172.21.0.11
 
 # As well as its pubkey
-alice$ lncli getinfo
+alice$ lncli --network=regtest getinfo
 {
     "identity_pubkey": "028c672ba08dd9f23d2be5a13a7b0221d1c0c71f24ffe1bc2f7a06366bb945b1cb", <---- THIS
     "num_pending_channels": 0,
@@ -138,10 +140,10 @@ Now back to bob
 
 ```
 # This will connect us but not create a channel
-bob$ lncli connect 028c672ba08dd9f23d2be5a13a7b0221d1c0c71f24ffe1bc2f7a06366bb945b1cb@172.21.0.11
+bob$ lncli --network=regtest connect 028c672ba08dd9f23d2be5a13a7b0221d1c0c71f24ffe1bc2f7a06366bb945b1cb@172.21.0.11
 
 # Confirm we connected
-bob$ lncli listpeers
+bob$ lncli --network=regtest listpeers
 {
     "peers": [
         {
@@ -158,7 +160,7 @@ bob$ lncli listpeers
 }
 
 # Now fund the channel with the pub_key from above and an amount denoted in satoshis
-bob$ lncli openchannel --node_key=028c672ba08dd9f23d2be5a13a7b0221d1c0c71f24ffe1bc2f7a06366bb945b1cb --local_amt=100000
+bob$ lncli --network=regtest openchannel --node_key=028c672ba08dd9f23d2be5a13a7b0221d1c0c71f24ffe1bc2f7a06366bb945b1cb --local_amt=100000
 {
   "funding_txid": "60a9807557599e8113e26d3ccc63112310e92478b9f6860dab6ce5e63437381b"
 }
@@ -174,7 +176,7 @@ bob$ lncli listchannels
 $ docker-compose run --rm bitcoin-cli generatetoaddress 4 2N7L9vZXJggNVMsmGRwu7seg8LMim1Zhimu
 
 # Bob should see his channel funded now
-bob$ lncli listchannels
+bob$ lncli --network=regtest listchannels
 {
     "channels": [
         {
@@ -187,7 +189,7 @@ bob$ lncli listchannels
 }
 
 # We can check from our side and see it there too
-docker-compose run --rm lncli listchannels
+docker-compose run --rm lncli --network=regtest listchannels
 {
     "channels": [
         {
@@ -204,7 +206,7 @@ docker-compose run --rm lncli listchannels
 
 ```
 # Create an invoice for 25000 satoshis
-alice$ lncli addinvoice --memo="Hello there" --amt=25000 
+alice$ lncli --network=regtest addinvoice --memo="Hello there" --amt=25000 
 
 {
   "r_hash": "62fccf13f33ae0c46c234ea15b4f322ec87b62d78e4ca094c2fd853e77116143",
@@ -215,7 +217,7 @@ alice$ lncli addinvoice --memo="Hello there" --amt=25000
 #### 4) Pay the Invoice as Bob
 ```
 # Lets look at the invoice to confirm it is right
-bob$ lncli decodepayreq lnbcrt250u1pdswnmjpp5vt7v7yln8tsvgmprf6s4knej9my8kckh3ex2p9xzlkznuac3v9psdqjfpjkcmr0yp6xsetjv5cqzys4mxdjxy49sz5e0l48usttv6lcqkepp8qz4tdvkzj68h9mufj2699v8p7hnd74vj6x36d29tmm0upt6tdlyce3ad2a970adh4rr5legqqlk9vv9
+bob$ lncli --network=regtest decodepayreq lnbcrt250u1pdswnmjpp5vt7v7yln8tsvgmprf6s4knej9my8kckh3ex2p9xzlkznuac3v9psdqjfpjkcmr0yp6xsetjv5cqzys4mxdjxy49sz5e0l48usttv6lcqkepp8qz4tdvkzj68h9mufj2699v8p7hnd74vj6x36d29tmm0upt6tdlyce3ad2a970adh4rr5legqqlk9vv9
 {
     "destination": "02037bc001e2acc783834f125656e3859ed097c4f43480ec6b95d7680d51dc4786",
     "payment_hash": "62fccf13f33ae0c46c234ea15b4f322ec87b62d78e4ca094c2fd853e77116143",
@@ -231,7 +233,12 @@ bob$ lncli decodepayreq lnbcrt250u1pdswnmjpp5vt7v7yln8tsvgmprf6s4knej9my8kckh3ex
 }
 
 # Lets pay it
-bob$ lncli payinvoice lnbcrt250u1pdswnmjpp5vt7v7yln8tsvgmprf6s4knej9my8kckh3ex2p9xzlkznuac3v9psdqjfpjkcmr0yp6xsetjv5cqzys4mxdjxy49sz5e0l48usttv6lcqkepp8qz4tdvkzj68h9mufj2699v8p7hnd74vj6x36d29tmm0upt6tdlyce3ad2a970adh4rr5legqqlk9vv9
+bob$ lncli --network=regtest payinvoice lnbcrt250u1pdswnmjpp5vt7v7yln8tsvgmprf6s4knej9my8kckh3ex2p9xzlkznuac3v9psdqjfpjkcmr0yp6xsetjv5cqzys4mxdjxy49sz5e0l48usttv6lcqkepp8qz4tdvkzj68h9mufj2699v8p7hnd74vj6x36d29tmm0upt6tdlyce3ad2a970adh4rr5legqqlk9vv9
+
+Description: Hello there
+Amount (in satoshis): 25000
+Destination: 02037bc001e2acc783834f125656e3859ed097c4f43480ec6b95d7680d51dc4786
+Confirm payment (yes/no): yes
 
 {
   "payment_error": "",
@@ -255,7 +262,7 @@ bob$ lncli payinvoice lnbcrt250u1pdswnmjpp5vt7v7yln8tsvgmprf6s4knej9my8kckh3ex2p
 
 #### 5) Check that it was received by Alice
 ```
-alice$ lncli listchannels
+alice$ lncli --network=regtest listchannels
 
 {
     "channels": [

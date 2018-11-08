@@ -43,15 +43,12 @@ RPCUSER=$(set_default "$RPCUSER" "devuser")
 RPCPASS=$(set_default "$RPCPASS" "devpass")
 DEBUG=$(set_default "$DEBUG" "debug")
 NETWORK=$(set_default "$NETWORK" "regtest")
-MACAROON_PATH=$(set_default "$MACAROON_PATH" "/root/.lnd/admin.macaroon")
-TLS_CERT_PATH=$(set_default "$TLS_CERT_PATH" "/root/.lnd/tls.cert")
-TLS_KEY_PATH=$(set_default "$TLS_KEY_PATH" "/root/.lnd/tls.key")
 
 CHAIN="bitcoin"
 BACKEND="bitcoind"
 
 exec lnd \
-    --noencryptwallet \
+    --noseedbackup \
     --logdir="/data" \
     "--$CHAIN.active" \
     "--$CHAIN.$NETWORK" \
@@ -59,10 +56,8 @@ exec lnd \
     "--$BACKEND.rpchost"="blockchain" \
     "--$BACKEND.rpcuser"="$RPCUSER" \
     "--$BACKEND.rpcpass"="$RPCPASS" \
-    "--$BACKEND.zmqpath"="tcp://blockchain:28332" \
-    --adminmacaroonpath="$MACAROON_PATH" \
-    --tlscertpath="$TLS_CERT_PATH" \
-    --tlskeypath="$TLS_KEY_PATH" \
+    "--$BACKEND.zmqpubrawblock=tcp://blockchain:28332" \
+    "--$BACKEND.zmqpubrawtx=tcp://blockchain:28333" \
     --rpclisten=0.0.0.0 \
     --debuglevel="$DEBUG" \
     "$@"
